@@ -26,6 +26,7 @@ app.post('/groupme', function(req, res) {
 
             if (args[1]) {
                 var arg = args[1].toLowerCase();
+                console.log(args[1]);
                 if (arg == "latest") {
 					xkcd.latest(function(error, response) {
 						if (error) {
@@ -39,16 +40,16 @@ app.post('/groupme', function(req, res) {
                     	makePost(response);
 					});
                 } else if (arg == "help") {
-                    makePost("Get latest comic: 'xkcd latest'\n" + 
+                    postToGroup("Get latest comic: 'xkcd latest'\n" + 
                             "Get random comic: 'xkcd' or 'xkcd random'\n" + 
                             "Get specific comic: 'xkcd #' (ex: 'xkcd 274')"
                     );
-			    } else if (isNan(arg)) {
+			    } else if (isNaN(arg)) {
 
                     postToGroup(arg + " is not a recognized command. try 'xkcd help' for a list of what you can do.");
                 } else {
 
- 					xkcd.get('comic-id', function(error, response) {
+ 					xkcd.get(arg, function(error, response) {
  						if (error) {
  							console.error(error);
  						} else {
