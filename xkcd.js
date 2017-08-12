@@ -13,7 +13,6 @@ app.get('/groupme', function(req, res) {
 var botID = "";
 
 app.post('/groupme', function(req, res) {
-    console.log("test");
     var string = "";
     req.on('data', function(data) {
         string += data;
@@ -21,19 +20,60 @@ app.post('/groupme', function(req, res) {
 
     req.on('end', function(){
         var message = JSON.parse(string);
+        var args = message.text.split(' ');
 
-        if (message.text == "xkcd") {
-            xkcd.random(function(error, response) {
-                console.log(response);
-                postToGroup(response.img);
-                postToGroup("Title: " + response.title + "\nalt: " + response.alt);
-            
-            });
+        if (args[0].toLowerCase() == "xkcd") {
+
+            if (args[1]) {
+                var arg = args[1].toLowerCase();
+                if (arg == "latest") {
+					xkcd.latest(function(error, response) {
+						if (error) {
+							console.error(error);
+					  	} else {
+					  		makePost(response);
+						}
+					});
+                } else if (arg == "random") {
+                    xkcd.random(function(error, response) {
+                    	makePost(response);
+					});
+                } else if (arg == "help") {
+                    makePost("Get latest comic: 'xkcd latest'\n" + 
+                            "Get random comic: 'xkcd' or 'xkcd random'\n" + 
+                            "Get specific comic: 'xkcd #' (ex: 'xkcd 274')"
+                    );
+			    } else if (isNan(arg)) {
+
+                    postToGroup(arg + " is not a recognized command. try 'xkcd help' for a list of what you can do.");
+                } else {
+
+ 					xkcd.get('comic-id', function(error, response) {
+ 						if (error) {
+ 							console.error(error);
+ 						} else {
+ 							makePost(response);
+						}
+					});
+                }
+
+
+            } else {
+
+                xkcd.random(function(error, response) {
+          			makePost(response); 
+                });
+            }
         }
     });
 
 });
 
+function makePost(comic) {
+	postToGroup(comic.img);
+	postToGroup("Title: " + comic.title + "\nalt: " + comic.alt);
+
+}
 
 function postToGroup(text) {
                 request({
